@@ -27,5 +27,67 @@ LABEL_START:
 	mov	ah, 02h		;
 	int	10h			; 
 
+	LEDS    EQU        0x0ff1
+	mov [LEDS], al
+	mov	al,	0ffh
+	out	21h,	AL
+	nop
+	out	0a1h,	AL
+
+	cli
+
+	CALL	waitkbdout
+	MOV	AL,	0d1h
+	OUT	064h,	AL
+	CALL	waitkbdout
+	MOV	AL,	0dfh
+	OUT	060h,	AL
+	CALL	waitkbdout
+
+	;protect mode
+	LGDT	[GDTR0]
+	MOV	EAX,CR0
+	AND	EAX,0x7fffffff
+	OR	EAX,0x00000001
+	MOV	CR0,EAX
+	MOV	AX,	1*8
+	MOV	DS,	AX
+	MOV	DS,AX
+	MOV	ES,AX
+	MOV	FS,AX
+	MOV	GS,AX
+	MOV	SS,AX
+	XOR	ECX,ECX
+	XOR	EDX,EDX
+L35:
+	XOR	EAX,EAX
+L34:
+	MOV	BYTE [0xe0000000+EAX+EDX*1],12
+	INC	EAX
+	CMP	EAX,1024
+	JLE	L34
+	INC	ECX
+	ADD	EDX,1024
+	CMP	ECX,768
+	JLE	L35
+L36:
+	JMP	L36
+
+waitkbdout:
+	IN	AL,	064h
+	AND	AL,	002h
+	JNZ	waitkbdout
+	RET
+
+GDT0:
+	RESB	8
+	DW	0xffff,0x0000,0x9200,0x00cf
+	DW	0xffff,0x0000,0x9a28,0x0047
+	DW	0
+
+GDTR0:
+        DW        8*3-1
+        DD        GDT0
+
 times 	510-($-$$)	db	0	; 填充剩下的空间，使生成的二进制代码恰好为512字节
 dw 	0xaa55				; 结束标志
