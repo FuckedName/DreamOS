@@ -1,0 +1,30 @@
+###############################################################
+# bochsrc.bxrc file for Tinix.
+###############################################################
+
+# how much memory the emulated machine will have
+megs: 32
+
+#display_library:sdl
+
+# filename of ROM images
+romimage: file=$BXSHARE/BIOS-bochs-latest
+vgaromimage: file=/usr/share/bochs/VGABIOS-lgpl-latest
+
+# what disk images will be used 
+#floppya: 1_44=vmlinuz-5.4.0-40-generic, status=inserted
+floppya: 1_44=boot.bin, status=inserted
+#floppya: 1_44=haribote.img, status=inserted
+
+# choose the boot disk.
+boot: a
+
+# where do we send log messages?
+log: bochsout.txt
+
+# disable the mouse, since Tinix is text only
+mouse: enabled=0
+
+# enable key mapping, using US layout as default.
+#keyboard_mapping: enabled=1, map=/usr/share/bochs/keymaps/sdl-pc-us.map
+
