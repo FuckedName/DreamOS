@@ -1,5 +1,3 @@
-%include "pm.inc"
-
 	org  07c00h			; Boot 状态, Bios 将把 Boot Sector 加载到 0:7C00 处并开始执行
 
 BaseOfStack		equ	0100h	; 调试状态下堆栈基地址(栈底, 从这个位置向低地址生长)
@@ -66,6 +64,54 @@ L34:
 L36:
 	JMP	L36
 	hlt
+
+;read disk
+	mov ax, 0820h
+	mov es, ax
+	mov ch, 0
+	mov dh, 0
+	mov cl, 2
+
+readloop:
+	mov si, 0
+
+retry:
+	mov ah, 02h
+	mov al, 01h
+	mov bx, 0
+	mov dl, 0h
+	int 013h
+	jnc next
+	add si, 1
+	cmp si, 5
+	jae error
+	mov ah, 0h
+	mov dl, 0h
+	int 013h
+	jmp retry
+
+next:
+	mov ax, es
+	add ax, 020h
+	mov es, ax
+	add cl, 1
+	cmp cl, 18
+	jbe readloop
+	mov cl, 1
+	add dh, 1
+	cmp dh, 2
+	jb  readloop
+	mov dh, 0
+	add ch, 1
+	cmp ch, 80 ; zhumian count
+	jb  readloop
+
+	mov [0ff0h], ch
+	jmp 0c200h ; 0x8000+0x4200=0xc200
+
+error:
+	mov si, msg
+
 waitkbdout:
 	IN	AL,	064h
 	AND	AL,	002h
@@ -81,6 +127,12 @@ GDT0:
 GDTR0:
         DW        8*3-1
         DD        GDT0
+
+msg:
+	db 00ah, 00ah
+	db "load error"
+	db 00ah
+	db 0
 
 times 	510-($-$$)	db	0	; 填充剩下的空间，使生成的二进制代码恰好为512字节
 dw 	0xaa55				; 结束标志
