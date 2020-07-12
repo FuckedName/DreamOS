@@ -4,17 +4,38 @@
 
 int PrintChineseCharByAreaCodeBitCode(unsigned char uc_AreaCode, unsigned char uc_BitCode)
 {
-    char chs[32];
-    FILE *fp;
+    //char chs[32];
     int offset;
 
     //根据内码找出汉字在HZK16中的偏移位置
     offset=((uc_AreaCode - 1) * 94 + (uc_BitCode - 1)) * 32;
-    if ((fp = fopen("HZK16", "r")) == NULL)
-        return 1;
 
-    fseek(fp, offset, SEEK_SET);
-    fread(chs, 32, 1, fp);
+
+	FILE *fp = NULL;
+	fp = fopen("HZK16","rb"); //打开文件
+	if(fp == NULL)
+	{
+		printf("--: %s---%d--HZK16 open error",__FILE__,__LINE__);
+	}
+	fseek(fp,0L,SEEK_END);  //定位到文件末尾
+	int flen = ftell(fp); //得到文件大小
+	char *chs = (char *)malloc(flen + 1); //分配空间存储文件中的数据
+	if(chs == NULL)
+	{
+		fclose(fp);
+		return 0;
+	}
+	memset(chs, 0, flen + 1);
+	fseek(fp,0L,SEEK_SET); //定位到文件开头
+	fread(chs,flen,1,fp);  //一次性读取全部文件内容
+	chs[flen] = '\0';  // 字符串最后一位为空
+
+    /*if ((fp = fopen("HZK16", "r")) == NULL)
+    #    return 1;
+
+    #fseek(fp, offset, SEEK_SET);
+    #fread(chs, 32, 1, fp);
+	*/
 
     for (int i = 0; i < 32; i++)
     {
@@ -22,7 +43,7 @@ int PrintChineseCharByAreaCodeBitCode(unsigned char uc_AreaCode, unsigned char u
             printf("\n");   //每行两字节,16X16点阵
         for (int j = 7; j >= 0; j--)
         {
-            if (chs[i] & (0x01 << j))
+            if (chs[i + offset] & (0x01 << j))
 
                 //由高到低,为1则输出'字',反之输出' ';
                 printf("*");
@@ -32,7 +53,7 @@ int PrintChineseCharByAreaCodeBitCode(unsigned char uc_AreaCode, unsigned char u
     }
 
     putchar('\n');
-    fclose(fp);
+    //fclose(fp);
 }
 
 int GetAreaBitCodeByChineseChar(const char* s)
