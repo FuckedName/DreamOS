@@ -14,13 +14,6 @@ LABEL_START:
 	mov	ss, ax
 	mov	sp, BaseOfStack
 
-	; 清屏
-	mov	ax, 0600h		; AH = 6,  AL = 0h
-	mov	bx, 0700h		; 黑底白字(BL = 07h)
-	mov	cx, 0			; 左上角: (0, 0)
-	mov	dx, 0184fh		; 右下角: (80, 50)
-	int	10h			; int 10h
-
 	mov	bx, 4105h		
 	mov	ax, 4f02h		;
 	int	10h			; 
@@ -62,17 +55,17 @@ LABEL_START:
 L35:
 	XOR	EAX,EAX
 L34:
-	MOV	BYTE [0xe0000000+EAX+EDX*1],12
+	MOV	BYTE [0xe0000000 + EAX + EDX], 11
 	INC	EAX
-	CMP	EAX,1024
+	CMP	EAX, 1024
 	JLE	L34
 	INC	ECX
-	ADD	EDX,1024
-	CMP	ECX,768
+	ADD	EDX, 1024
+	CMP	ECX, 168
 	JLE	L35
 L36:
 	JMP	L36
-
+	hlt
 waitkbdout:
 	IN	AL,	064h
 	AND	AL,	002h
